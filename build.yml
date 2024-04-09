@@ -1,0 +1,70 @@
+deploy:
+  repository: buildsystem
+  registry: 123456789012.dkr.ecr.us-west-1.amazonaws.com
+  ecs_task_execution_role_arn: arn:aws:iam::123456789012:role/ecs_task_execution
+  aws_region: us-west-1
+  subnets:
+    - subnet-12345678901234567
+    - subnet-12345678901234568
+  security_groups:
+    - sg-1234567890asdfghj
+  clusters:
+    develop: DEVELOP
+    staging: STAGING
+    production: PRODUCTION
+projects:
+  rails:
+    docker_build_args:
+      RAILS_ENV: production
+    image: rails
+    docker_tasks:
+      rails_daemon:
+        task_definition:
+          default:
+            cpu: 512
+            memory: 1024
+        task_environment:
+          ENABLE_DAEMON: 1
+          RAILS_MAX_THREADS: 8
+          WORKER_QUEUE: '@web'
+
+      rails_web:
+        task_definition:
+          default:
+            cpu: 512
+            memory: 1024
+        task_environment:
+          ENABLE_WEB: 1
+          ENABLE_CRON: 1
+          RAILS_MAX_THREADS: 8
+          WORKER_QUEUE: '@web'
+
+      rails_worker:
+        task_definition:
+          default:
+            cpu: 512
+            memory: 1024
+        task_environment:
+          ENABLE_WORKERS: 1
+          RAILS_MAX_THREADS: 10
+          WORKER_QUEUE: '*'
+
+      rails_worker_orders_queue:
+        task_definition:
+          default:
+            cpu: 1024
+            memory: 2048
+        task_environment:
+          ENABLE_WORKERS: 1
+          RAILS_MAX_THREADS: 10
+          WORKER_QUEUE: '@orders_queue'
+
+      rails_worker_fast_queue:
+        task_definition:
+          default:
+            cpu: 512
+            memory: 1024
+        task_environment:
+          ENABLE_WORKERS: 1
+          RAILS_MAX_THREADS: 10
+          WORKER_QUEUE: '@fast_queue'
